@@ -8,10 +8,10 @@ abstract mixin class PaginationController<T> {
   Future<PaginationData<T>> fetchPageData(int page);
 
   @protected
-  void setPaginationState(PaginationState<T> state);
+  void setPaginationState(PaginationState<T> newState);
 
   @protected
-  PaginationState<T> get getPaginationState;
+  PaginationState<T> get paginationState;
 
   Future<void> load() async {
     setPaginationState(PaginationState.initial());
@@ -20,15 +20,15 @@ abstract mixin class PaginationController<T> {
 
   /// will not reset data until new one is fetched
   Future<void> refresh() async {
-    setPaginationState(getPaginationState.copyWith(currentPage: 1));
+    setPaginationState(paginationState.copyWith(currentPage: 1));
     await _fetchInitialData();
   }
 
   Future<void> _fetchInitialData() async {
     try {
-      final result = await fetchPageData(getPaginationState.currentPage);
+      final result = await fetchPageData(paginationState.currentPage);
       setPaginationState(
-        getPaginationState.copyWith(
+        paginationState.copyWith(
           status: const PaginationLoadSuccess(),
           data: result.data,
           hasReachedEnd: result.hasReachedEnd,
@@ -36,31 +36,31 @@ abstract mixin class PaginationController<T> {
       );
     } catch (e) {
       setPaginationState(
-        getPaginationState.copyWith(status: PaginationLoadFailure(e)),
+        paginationState.copyWith(status: PaginationLoadFailure(e)),
       );
     }
   }
 
   Future<void> loadMore() async {
-    if (getPaginationState.status is! PaginationLoadSuccess &&
-        getPaginationState.status is! PaginationLoadMoreFailure) {
+    if (paginationState.status is! PaginationLoadSuccess &&
+        paginationState.status is! PaginationLoadMoreFailure) {
       return;
     }
-    if (getPaginationState.hasReachedEnd) return;
+    if (paginationState.hasReachedEnd) return;
 
-    final currentState = getPaginationState;
+    final currentState = paginationState;
 
     setPaginationState(
-      getPaginationState.copyWith(
+      paginationState.copyWith(
         status: const PaginationLoadingMore(),
-        currentPage: getPaginationState.currentPage + 1,
+        currentPage: paginationState.currentPage + 1,
       ),
     );
 
     try {
-      final result = await fetchPageData(getPaginationState.currentPage);
+      final result = await fetchPageData(paginationState.currentPage);
       setPaginationState(
-        getPaginationState.copyWith(
+        paginationState.copyWith(
           status: const PaginationLoadSuccess(),
           data: [...currentState.data, ...result.data],
           hasReachedEnd: result.hasReachedEnd,
@@ -68,7 +68,7 @@ abstract mixin class PaginationController<T> {
       );
     } catch (e) {
       setPaginationState(
-        getPaginationState.copyWith(status: PaginationLoadMoreFailure(e)),
+        paginationState.copyWith(status: PaginationLoadMoreFailure(e)),
       );
     }
   }
