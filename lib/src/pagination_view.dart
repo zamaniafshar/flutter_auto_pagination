@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'pagination_state.dart';
 
 typedef WidgetBuilder = Widget Function(BuildContext context);
-typedef LoadMoreButtonBuilder =
-    Widget Function(BuildContext context, bool isLoading);
-typedef ItemBuilder<T> =
-    Widget Function(BuildContext context, int index, T item);
+typedef LoadMoreButtonBuilder = Widget Function(BuildContext context, bool isLoading);
+typedef ItemBuilder<T> = Widget Function(BuildContext context, int index, T item);
 typedef ErrorBuilder = Widget Function(BuildContext context, Object? e);
 
 sealed class PaginationViewType {
@@ -18,9 +16,7 @@ final class PaginationListView extends PaginationViewType {
 }
 
 final class PaginationGridView extends PaginationViewType {
-  const PaginationGridView({
-    required this.gridDelegate,
-  });
+  const PaginationGridView({required this.gridDelegate});
 
   final SliverGridDelegate gridDelegate;
 }
@@ -30,9 +26,7 @@ sealed class PaginationLoadType {}
 final class PaginationManualLoading extends PaginationLoadType {
   final LoadMoreButtonBuilder? loadButtonBuilder;
 
-  PaginationManualLoading({
-    this.loadButtonBuilder,
-  });
+  PaginationManualLoading({this.loadButtonBuilder});
 }
 
 final class PaginationAutoLoadMore extends PaginationLoadType {
@@ -75,17 +69,12 @@ class AutoPagination<T> extends StatefulWidget {
     this.cacheExtent,
   }) {
     assert(
-      sliver &&
-          (loadType is PaginationAutoLoadMore ||
-              loadType is PaginationInfiniteLoading) &&
+      !(sliver && (loadType is PaginationAutoLoadMore || loadType is PaginationInfiniteLoading)) ||
           scrollController != null,
       'scrollController must not be null when sliver is true and loadType is PaginationAutoLoadMore or PaginationInfiniteLoading',
     );
 
-    assert(
-      sliver && cacheExtent == null,
-      'cacheExtent can not be used when sliver is true',
-    );
+    assert(!(sliver && cacheExtent == null), 'cacheExtent can not be used when sliver is true');
   }
 
   final ItemBuilder builder;
@@ -135,10 +124,8 @@ class _AutoPaginationState<T> extends State<AutoPagination<T>> {
     if (widget.loadType is PaginationManualLoading) return;
 
     final threshold = switch (widget.loadType) {
-      PaginationAutoLoadMore(:final paginationScrollThreshold) =>
-        paginationScrollThreshold,
-      PaginationInfiniteLoading(:final paginationScrollThreshold) =>
-        paginationScrollThreshold,
+      PaginationAutoLoadMore(:final paginationScrollThreshold) => paginationScrollThreshold,
+      PaginationInfiniteLoading(:final paginationScrollThreshold) => paginationScrollThreshold,
       _ => throw Exception('Invalid load type'),
     };
 
@@ -176,9 +163,7 @@ class _AutoPaginationState<T> extends State<AutoPagination<T>> {
     return CustomScrollView(
       controller: scrollController,
       cacheExtent: widget.cacheExtent,
-      slivers: [
-        sliver,
-      ],
+      slivers: [sliver],
     );
   }
 
@@ -202,38 +187,35 @@ class _AutoPaginationState<T> extends State<AutoPagination<T>> {
     return SliverPadding(
       padding: widget.padding ?? EdgeInsets.zero,
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            if (index < itemsCount) {
-              final item = widget.state.data[index];
+        delegate: SliverChildBuilderDelegate((context, index) {
+          if (index < itemsCount) {
+            final item = widget.state.data[index];
 
-              return widget.builder(context, index, item);
+            return widget.builder(context, index, item);
+          }
+
+          if (loadType is PaginationInfiniteLoading) {
+            if (index > itemsCount + 20) {
+              return null;
             }
 
-            if (loadType is PaginationInfiniteLoading) {
-              if (index > itemsCount + 20) {
-                return null;
-              }
+            return loadType.loadingItemBuilder(context);
+          }
 
-              return loadType.loadingItemBuilder(context);
-            }
+          if (loadType is PaginationAutoLoadMore) {
+            return loadType.loadingMoreBuilder(context);
+          }
 
-            if (loadType is PaginationAutoLoadMore) {
-              return loadType.loadingMoreBuilder(context);
-            }
+          if (loadType is PaginationManualLoading) {
+            return loadType.loadButtonBuilder?.call(
+                  context,
+                  widget.state.status is PaginationLoadingMore,
+                ) ??
+                SizedBox();
+          }
 
-            if (loadType is PaginationManualLoading) {
-              return loadType.loadButtonBuilder?.call(
-                    context,
-                    widget.state.status is PaginationLoadingMore,
-                  ) ??
-                  SizedBox();
-            }
-
-            return SizedBox();
-          },
-          childCount: count,
-        ),
+          return SizedBox();
+        }, childCount: count),
       ),
     );
   }
@@ -252,38 +234,35 @@ class _AutoPaginationState<T> extends State<AutoPagination<T>> {
       padding: widget.padding ?? EdgeInsets.zero,
       sliver: SliverGrid(
         gridDelegate: (widget.viewType as PaginationGridView).gridDelegate,
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            if (index < itemsCount) {
-              final item = widget.state.data[index];
+        delegate: SliverChildBuilderDelegate((context, index) {
+          if (index < itemsCount) {
+            final item = widget.state.data[index];
 
-              return widget.builder(context, index, item);
+            return widget.builder(context, index, item);
+          }
+
+          if (loadType is PaginationInfiniteLoading) {
+            if (index > itemsCount + 20) {
+              return null;
             }
 
-            if (loadType is PaginationInfiniteLoading) {
-              if (index > itemsCount + 20) {
-                return null;
-              }
+            return loadType.loadingItemBuilder(context);
+          }
 
-              return loadType.loadingItemBuilder(context);
-            }
+          if (loadType is PaginationAutoLoadMore) {
+            return loadType.loadingMoreBuilder(context);
+          }
 
-            if (loadType is PaginationAutoLoadMore) {
-              return loadType.loadingMoreBuilder(context);
-            }
+          if (loadType is PaginationManualLoading) {
+            return loadType.loadButtonBuilder?.call(
+                  context,
+                  widget.state.status is PaginationLoadingMore,
+                ) ??
+                SizedBox();
+          }
 
-            if (loadType is PaginationManualLoading) {
-              return loadType.loadButtonBuilder?.call(
-                    context,
-                    widget.state.status is PaginationLoadingMore,
-                  ) ??
-                  SizedBox();
-            }
-
-            return SizedBox();
-          },
-          childCount: count,
-        ),
+          return SizedBox();
+        }, childCount: count),
       ),
     );
   }

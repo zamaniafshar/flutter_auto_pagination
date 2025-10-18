@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'pagination_state.dart';
 import 'pagination_data.dart';
 
-abstract mixin class PaginationController<T> {
+abstract mixin class AutoPaginationMixin<T> {
   @protected
   Future<PaginationData<T>> fetchPageData(int page);
 
