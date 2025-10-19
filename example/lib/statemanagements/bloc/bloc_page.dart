@@ -1,34 +1,34 @@
+import 'package:example/statemanagements/bloc/articles_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_auto_pagination/flutter_auto_pagination.dart';
 
 import '../../models/article.dart';
 import '../../repository/articles_repository.dart';
-import 'articles_provider.dart';
 
-class ProviderExamplePage extends StatelessWidget {
-  const ProviderExamplePage({super.key});
+class BlocExamplePage extends StatelessWidget {
+  const BlocExamplePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ArticlesProvider(ArticlesRepository())..load(),
-      child: const _ProviderExamplePage(),
+    return BlocProvider(
+      create: (_) =>
+          ArticlesBloc(ArticlesRepository())..add(ArticlesLoadRequested()),
+      child: const _BlocExamplePage(),
     );
   }
 }
 
-class _ProviderExamplePage extends StatelessWidget {
-  const _ProviderExamplePage({super.key});
+class _BlocExamplePage extends StatelessWidget {
+  const _BlocExamplePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Provider + AutoPagination')),
-      body: Consumer(
-        builder: (context, _, _) {
-          final state = context.watch<ArticlesProvider>().paginationState;
-
+      appBar: AppBar(title: const Text('Bloc + AutoPagination')),
+      body: BlocBuilder<ArticlesBloc, PaginationState<Article>>(
+        builder: (context, state) {
           return AutoPagination<Article>(
             state: state,
             builder: (context, index, item) => ListTile(
@@ -36,7 +36,8 @@ class _ProviderExamplePage extends StatelessWidget {
               subtitle: Text('ID: ${item.id}'),
             ),
             loadMoreType: PaginationAutoLoadMore(
-              loadMore: () => context.read<ArticlesProvider>().loadMore(),
+              loadMore: () =>
+                  context.read<ArticlesBloc>().add(ArticlesLoadMoreRequested()),
               loadingMoreBuilder: (context) => const Padding(
                 padding: EdgeInsets.all(16),
                 child: Center(child: CircularProgressIndicator()),
@@ -51,7 +52,8 @@ class _ProviderExamplePage extends StatelessWidget {
                   Text('Error: $e'),
                   const SizedBox(height: 8),
                   ElevatedButton(
-                    onPressed: () => context.read<ArticlesProvider>().refresh(),
+                    onPressed: () =>
+                        context.read<ArticlesBloc>().add(ArticlesRefreshed()),
                     child: const Text('Retry'),
                   ),
                 ],

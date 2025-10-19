@@ -4,7 +4,8 @@ import 'package:flutter_auto_pagination/flutter_auto_pagination.dart';
 import '../../models/article.dart';
 import '../../repository/articles_repository.dart';
 
-class ArticlesProvider extends ChangeNotifier with PaginationController<Article> {
+class ArticlesProvider extends ChangeNotifier
+    with AutoPaginationMixin<Article> {
   final ArticlesRepository _repo;
 
   ArticlesProvider(this._repo) : _state = PaginationState<Article>.initial();

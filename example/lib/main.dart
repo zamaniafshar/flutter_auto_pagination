@@ -1,3 +1,6 @@
+import 'package:example/infinite_loading_example.dart';
+import 'package:example/manual_loading.dart';
+import 'package:example/simple_example.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -9,12 +12,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
-    );
+    return const MaterialApp(home: InfiniteLoadMoreExample());
   }
 }
