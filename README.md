@@ -5,16 +5,16 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 <!-- TODO: Replace with your real screenshot -->
-![Package Banner](docs/images/banner.png)
+![Package Banner](https://github.com/zamaniafshar/flutter_auto_pagination/blob/0bb820b592f7dbb5d57c8d9149802bb45950d372/resources/banner.png)
 
 A lightweight, declarative pagination helper for Flutter that keeps your
 pagination logic clean and your UI simple.
 
 
 <p align="center">
-  <img src="gif1.gif" width="30%" />
-  <img src="gif2.gif" width="30%" />
-  <img src="gif3.gif" width="30%" />
+  <img src="https://github.com/zamaniafshar/flutter_auto_pagination/blob/0bb820b592f7dbb5d57c8d9149802bb45950d372/resources/simple_ex.gif" width="30%" />
+  <img src="https://github.com/zamaniafshar/flutter_auto_pagination/blob/0bb820b592f7dbb5d57c8d9149802bb45950d372/resources/manual_ex.gif" width="30%" />
+  <img src="https://github.com/zamaniafshar/flutter_auto_pagination/blob/0bb820b592f7dbb5d57c8d9149802bb45950d372/resources/complex_ex.gif" width="30%" />
 </p>
 
 
