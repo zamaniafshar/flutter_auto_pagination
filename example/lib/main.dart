@@ -66,7 +66,7 @@ class Home extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text('Manual Load More Example'),
+              child: const Text('Complex Example'),
             ),
           ),
         ],
