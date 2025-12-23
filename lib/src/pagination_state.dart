@@ -1,3 +1,9 @@
+/// Immutable snapshot of pagination state for a list of items.
+///
+/// This is the only state type that `AutoPaginationMixin` and
+/// `AutoPagination` care about. You typically hold an instance of this in
+/// your own state-management layer and update it in
+/// `onPaginationStateChanged`.
 class PaginationState<T> {
   final bool hasReachedEnd;
   final List<T> data;
@@ -52,10 +58,15 @@ class PaginationState<T> {
       currentPage.hashCode;
 }
 
+/// Base type for all pagination status values.
+///
+/// Use `is` checks (e.g. `state.status is PaginationLoading`) to branch in
+/// your UI or business logic.
 sealed class PaginationStatus {
   const PaginationStatus();
 }
 
+/// Indicates that the first page of data is being loaded.
 class PaginationLoading extends PaginationStatus {
   const PaginationLoading();
 
@@ -67,6 +78,7 @@ class PaginationLoading extends PaginationStatus {
   int get hashCode => runtimeType.hashCode;
 }
 
+/// Indicates that an additional page is being loaded.
 class PaginationLoadingMore extends PaginationStatus {
   const PaginationLoadingMore();
 
@@ -78,6 +90,7 @@ class PaginationLoadingMore extends PaginationStatus {
   int get hashCode => runtimeType.hashCode;
 }
 
+/// Indicates that data has been successfully loaded.
 class PaginationLoadSuccess extends PaginationStatus {
   const PaginationLoadSuccess();
 
@@ -89,6 +102,10 @@ class PaginationLoadSuccess extends PaginationStatus {
   int get hashCode => runtimeType.hashCode;
 }
 
+/// Indicates that loading the first page failed.
+///
+/// The [error] field contains the original error object so you can surface
+/// it in the UI or log it.
 class PaginationLoadFailure extends PaginationStatus {
   final Object? error;
   const PaginationLoadFailure(this.error);
@@ -102,6 +119,10 @@ class PaginationLoadFailure extends PaginationStatus {
   int get hashCode => error.hashCode;
 }
 
+/// Indicates that loading an additional page failed.
+///
+/// The [error] field contains the original error object so you can surface
+/// it in the UI or log it. Existing items remain available.
 class PaginationLoadMoreFailure extends PaginationStatus {
   final Object? error;
   const PaginationLoadMoreFailure(this.error);

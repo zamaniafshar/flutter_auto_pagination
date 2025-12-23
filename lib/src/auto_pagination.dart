@@ -3,35 +3,52 @@ import 'package:flutter_auto_pagination/src/size_detector.dart';
 
 import 'pagination_state.dart';
 
+/// Signature for a simple widget builder that only depends on [BuildContext].
 typedef WidgetBuilder = Widget Function(BuildContext context);
+
+/// Signature for building the "Load more" button.
+///
+/// [isLoading] will be `true` while an additional page is being fetched.
 typedef LoadMoreButtonBuilder =
     Widget Function(BuildContext context, bool isLoading);
+
+/// Signature for building each list/grid item.
 typedef ItemBuilder<T> =
     Widget Function(BuildContext context, int index, T item);
+
+/// Signature for building an error widget.
 typedef ErrorBuilder = Widget Function(BuildContext context, Object? e);
 
+/// Describes whether items are rendered in a list or a grid.
 sealed class PaginationViewType {
   const PaginationViewType();
 }
 
+/// Renders items using a vertical [SliverList].
 final class PaginationListView extends PaginationViewType {
   const PaginationListView();
 }
 
+/// Renders items using a [SliverGrid] with the provided [gridDelegate].
 final class PaginationGridView extends PaginationViewType {
   const PaginationGridView({required this.gridDelegate});
 
   final SliverGridDelegate gridDelegate;
 }
 
+/// Base type for strategies that decide how more items are loaded.
 sealed class PaginationLoadMoreType {}
 
+/// Shows a button at the end of the list that the user can tap to
+/// explicitly request more items.
 final class PaginationManualLoadMore extends PaginationLoadMoreType {
   final LoadMoreButtonBuilder? loadButtonBuilder;
 
   PaginationManualLoadMore({this.loadButtonBuilder});
 }
 
+/// Automatically requests more items when the user scrolls close to the end
+/// of the list.
 final class PaginationAutoLoadMore extends PaginationLoadMoreType {
   final double paginationScrollThreshold;
   final void Function() loadMore;
@@ -46,6 +63,13 @@ final class PaginationAutoLoadMore extends PaginationLoadMoreType {
   });
 }
 
+/// High-level widget that renders a paginated list or grid based on a
+/// [PaginationState].
+///
+/// This widget is intentionally dumb: it only reads the provided
+/// [state] and delegates to your builders. Use it together with
+/// `AutoPaginationMixin` (or any other paging logic) to keep networking and
+/// business rules outside of the UI layer.
 class AutoPagination<T> extends StatefulWidget {
   AutoPagination({
     super.key,
