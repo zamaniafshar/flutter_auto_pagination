@@ -18,7 +18,7 @@ class ArticlesCubit extends Cubit<PaginationState<Article>>
   PaginationState<Article> get paginationState => state;
 
   @override
-  void setPaginationState(PaginationState<Article> newState) {
+  void onPaginationStateChanged(PaginationState<Article> newState) {
     emit(newState);
   }
 }

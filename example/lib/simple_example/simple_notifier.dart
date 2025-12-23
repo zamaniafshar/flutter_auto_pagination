@@ -19,7 +19,7 @@ class SimpleNotifier extends ChangeNotifier with AutoPaginationMixin<Article> {
   PaginationState<Article> get paginationState => _state;
 
   @override
-  void setPaginationState(PaginationState<Article> newState) {
+  void onPaginationStateChanged(PaginationState<Article> newState) {
     _state = newState;
     notifyListeners();
   }

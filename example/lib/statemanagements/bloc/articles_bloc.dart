@@ -27,7 +27,7 @@ class ArticlesBloc extends Bloc<ArticlesEvent, PaginationState<Article>>
   PaginationState<Article> get paginationState => state;
 
   @override
-  void setPaginationState(PaginationState<Article> newState) {
+  void onPaginationStateChanged(PaginationState<Article> newState) {
     add(_ArticlesPaginationStateChangedEvent(newState));
   }
 

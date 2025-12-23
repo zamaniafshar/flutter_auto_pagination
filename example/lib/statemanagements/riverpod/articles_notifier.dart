@@ -29,7 +29,7 @@ class ArticlesNotifier extends _$ArticlesNotifier
   PaginationState<Article> get paginationState => state;
 
   @override
-  void setPaginationState(PaginationState<Article> newState) {
+  void onPaginationStateChanged(PaginationState<Article> newState) {
     state = newState;
   }
 }
