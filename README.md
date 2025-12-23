@@ -331,6 +331,37 @@ keeps the package:
 If you prefer an alternative where the mixin owns its state internally, please
 open an issue – we can explore an opt-in helper or a separate mixin.
 
+## Why flutter_auto_pagination?
+
+If you have used other pagination packages like `infinite_scroll_pagination`, you might have noticed they are powerful but often **complex** and **opinionated**. They force you to use their own `Controllers`, which often leads to "State Duplication" (where your data lives in both your Bloc/Provider and the package's Controller).
+
+`flutter_auto_pagination` was built to be **declarative, lightweight, and architecture-friendly.**
+
+### Comparison at a Glance
+
+| Feature | `infinite_scroll_pagination` | `flutter_auto_pagination` |
+| :--- | :--- | :--- |
+| **State Ownership** | **Opinionated:** Uses `PagingController`. Data is duplicated. | **Agnostic:** Uses a Mixin. Data stays in your State Management. |
+| **Setup Complexity** | **High:** Requires manual controller management & listeners. | **Low:** Just add a Mixin to your notifier and you're done. |
+| **Manual Load Button** | **Hard:** Requires custom "hacks" using error/empty builders. | **Native:** Built-in `PaginationManualLoadMore` support. |
+| **Single Source of Truth** | ❌ Hard to maintain with Bloc/Riverpod. | ✅ Perfect. Your state is the only source of truth. |
+| **Boilerplate** | High (Verbose) | Low (Clean & Declarative) |
+| **UI Flexibility** | Good, but complex to switch ViewTypes. | High (Switch between List/Grid/Slivers easily). |
+
+---
+
+### Key Advantages
+
+#### 1. No "State Hijacking"
+Most libraries "own" your list of items. With our `AutoPaginationMixin`, you keep your items in your own `List<T>`. This makes operations like **deleting an item**, **updating a specific row**, or **local filtering** as easy as working with a standard Flutter list. No need to sync two different states.
+
+#### 2. Native Manual Load More
+Sometimes infinite scroll isn't the best UX. Switching from an automatic "load-on-scroll" to a manual "Load More" button is just a matter of changing the `loadMoreType` parameter. No extra logic required.
+
+#### 3. True Clean Architecture
+Because it doesn't force a base class or a specific controller on you, it fits perfectly into any architecture. Whether you use **Cubit, Bloc, Riverpod, or simple ChangeNotifiers**, this package acts as a helper, not a manager.
+
+
 ---
 
 ## Contributing
