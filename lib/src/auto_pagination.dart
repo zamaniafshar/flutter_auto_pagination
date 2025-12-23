@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_auto_pagination/src/size_detector.dart';
 
 import 'pagination_state.dart';
 
@@ -34,24 +35,14 @@ final class PaginationManualLoadMore extends PaginationLoadMoreType {
 final class PaginationAutoLoadMore extends PaginationLoadMoreType {
   final double paginationScrollThreshold;
   final void Function() loadMore;
+  final int? loadItemsCount;
   final WidgetBuilder loadingMoreBuilder;
 
   PaginationAutoLoadMore({
     this.paginationScrollThreshold = 250,
     required this.loadMore,
     required this.loadingMoreBuilder,
-  });
-}
-
-final class PaginationInfiniteLoadMore extends PaginationLoadMoreType {
-  final double paginationScrollThreshold;
-  final void Function() loadMore;
-  final WidgetBuilder loadingItemBuilder;
-
-  PaginationInfiniteLoadMore({
-    this.paginationScrollThreshold = 250,
-    required this.loadMore,
-    required this.loadingItemBuilder,
+    this.loadItemsCount,
   });
 }
 
@@ -71,16 +62,14 @@ class AutoPagination<T> extends StatefulWidget {
     this.cacheExtent,
   }) {
     assert(
-      !(sliver &&
-              (loadMoreType is PaginationAutoLoadMore ||
-                  loadMoreType is PaginationInfiniteLoadMore)) ||
+      !(sliver && loadMoreType is PaginationAutoLoadMore) ||
           scrollController != null,
       'scrollController must not be null when sliver is true and loadType is PaginationAutoLoadMore or PaginationInfiniteLoading',
     );
 
     assert(
-      !(sliver && cacheExtent == null),
-      'cacheExtent can not be used when sliver is true',
+      !(sliver && cacheExtent != null),
+      'cacheExtent must not be used when sliver is true',
     );
   }
 
@@ -102,6 +91,7 @@ class AutoPagination<T> extends StatefulWidget {
 
 class _AutoPaginationState<T> extends State<AutoPagination<T>> {
   late final scrollController = widget.scrollController ?? ScrollController();
+  Size? loadMoreWidgetSize;
 
   @override
   void initState() {
@@ -130,27 +120,42 @@ class _AutoPaginationState<T> extends State<AutoPagination<T>> {
   void scrollListener() {
     if (widget.loadMoreType is PaginationManualLoadMore) return;
 
-    final threshold = switch (widget.loadMoreType) {
-      PaginationAutoLoadMore(:final paginationScrollThreshold) =>
-        paginationScrollThreshold,
-      PaginationInfiniteLoadMore(:final paginationScrollThreshold) =>
-        paginationScrollThreshold,
-      _ => throw Exception('Invalid load type'),
-    };
-
     final maxScroll = scrollController.position.maxScrollExtent;
     final currentScroll = scrollController.position.pixels;
-    final isAtTheEnd = maxScroll - currentScroll <= threshold;
+    final isAtTheEnd = maxScroll - currentScroll <= autoScrollThreshold;
 
     if (!isAtTheEnd) return;
 
     final loadMore = switch (widget.loadMoreType) {
       PaginationAutoLoadMore(:final loadMore) => loadMore,
-      PaginationInfiniteLoadMore(:final loadMore) => loadMore,
       _ => throw Exception('Invalid load type'),
     };
 
     loadMore();
+  }
+
+  double get autoScrollThreshold {
+    final loadMoreType = widget.loadMoreType;
+    if (loadMoreType is! PaginationAutoLoadMore) {
+      return 0;
+    }
+
+    final threshold = loadMoreType.paginationScrollThreshold;
+    final loadItemsCount = loadMoreType.loadItemsCount ?? 1;
+
+    final loadMoreItemsSize =
+        (loadMoreWidgetSize?.height ?? 0) * loadItemsCount;
+    return threshold + loadMoreItemsSize;
+  }
+
+  int get childCount {
+    final loadType = widget.loadMoreType;
+    final count = widget.state.data.length;
+    if (widget.loadMoreType is PaginationManualLoadMore) {
+      return count + 1;
+    }
+
+    return count + ((loadType as PaginationAutoLoadMore).loadItemsCount ?? 1);
   }
 
   @override
@@ -186,45 +191,39 @@ class _AutoPaginationState<T> extends State<AutoPagination<T>> {
   Widget buildItemsSliverList(BuildContext context) {
     final itemsCount = widget.state.data.length;
     final loadType = widget.loadMoreType;
-    int? count;
-    if (loadType is PaginationInfiniteLoadMore) {
-      count = null;
-    } else {
-      count = itemsCount + 1;
-    }
 
     return SliverPadding(
       padding: widget.padding ?? EdgeInsets.zero,
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          if (index < itemsCount) {
-            final item = widget.state.data[index];
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (index < itemsCount) {
+              final item = widget.state.data[index];
 
-            return widget.builder(context, index, item);
-          }
-
-          if (loadType is PaginationInfiniteLoadMore) {
-            if (index > itemsCount + 20) {
-              return null;
+              return widget.builder(context, index, item);
             }
 
-            return loadType.loadingItemBuilder(context);
-          }
+            if (widget.state.hasReachedEnd) return SizedBox();
 
-          if (loadType is PaginationAutoLoadMore) {
-            return loadType.loadingMoreBuilder(context);
-          }
+            if (loadType is PaginationAutoLoadMore) {
+              return SizeDetector(
+                onSizeChanged: (value) => loadMoreWidgetSize = value,
+                child: loadType.loadingMoreBuilder(context),
+              );
+            }
 
-          if (loadType is PaginationManualLoadMore) {
-            return loadType.loadButtonBuilder?.call(
-                  context,
-                  widget.state.status is PaginationLoadingMore,
-                ) ??
-                SizedBox();
-          }
+            if (loadType is PaginationManualLoadMore) {
+              return loadType.loadButtonBuilder?.call(
+                    context,
+                    widget.state.status is PaginationLoadingMore,
+                  ) ??
+                  SizedBox();
+            }
 
-          return SizedBox();
-        }, childCount: count),
+            return SizedBox();
+          },
+          childCount: childCount,
+        ),
       ),
     );
   }
@@ -232,46 +231,40 @@ class _AutoPaginationState<T> extends State<AutoPagination<T>> {
   Widget buildItemsSliverGrid(BuildContext context) {
     final itemsCount = widget.state.data.length;
     final loadType = widget.loadMoreType;
-    int? count;
-    if (loadType is PaginationInfiniteLoadMore) {
-      count = null;
-    } else {
-      count = itemsCount + 1;
-    }
 
     return SliverPadding(
       padding: widget.padding ?? EdgeInsets.zero,
       sliver: SliverGrid(
         gridDelegate: (widget.viewType as PaginationGridView).gridDelegate,
-        delegate: SliverChildBuilderDelegate((context, index) {
-          if (index < itemsCount) {
-            final item = widget.state.data[index];
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (index < itemsCount) {
+              final item = widget.state.data[index];
 
-            return widget.builder(context, index, item);
-          }
-
-          if (loadType is PaginationInfiniteLoadMore) {
-            if (index > itemsCount + 20) {
-              return null;
+              return widget.builder(context, index, item);
             }
 
-            return loadType.loadingItemBuilder(context);
-          }
+            if (widget.state.hasReachedEnd) return SizedBox();
 
-          if (loadType is PaginationAutoLoadMore) {
-            return loadType.loadingMoreBuilder(context);
-          }
+            if (loadType is PaginationAutoLoadMore) {
+              return SizeDetector(
+                onSizeChanged: (value) => loadMoreWidgetSize = value,
+                child: loadType.loadingMoreBuilder(context),
+              );
+            }
 
-          if (loadType is PaginationManualLoadMore) {
-            return loadType.loadButtonBuilder?.call(
-                  context,
-                  widget.state.status is PaginationLoadingMore,
-                ) ??
-                SizedBox();
-          }
+            if (loadType is PaginationManualLoadMore) {
+              return loadType.loadButtonBuilder?.call(
+                    context,
+                    widget.state.status is PaginationLoadingMore,
+                  ) ??
+                  SizedBox();
+            }
 
-          return SizedBox();
-        }, childCount: count),
+            return SizedBox();
+          },
+          childCount: childCount,
+        ),
       ),
     );
   }
