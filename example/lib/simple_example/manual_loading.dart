@@ -1,17 +1,18 @@
 import 'package:example/models/article.dart';
 import 'package:example/repository/articles_repository.dart';
-import 'package:example/simple_notifier.dart';
+import 'package:example/simple_example/simple_example.dart';
+import 'package:example/simple_example/simple_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auto_pagination/flutter_auto_pagination.dart';
 
-class SimpleExample extends StatefulWidget {
-  const SimpleExample({super.key});
+class ManualLoadMoreExample extends StatefulWidget {
+  const ManualLoadMoreExample({super.key});
 
   @override
-  State<SimpleExample> createState() => _SimpleExampleState();
+  State<ManualLoadMoreExample> createState() => _ManualLoadMoreExampleState();
 }
 
-class _SimpleExampleState extends State<SimpleExample> {
+class _ManualLoadMoreExampleState extends State<ManualLoadMoreExample> {
   SimpleNotifier notifier = SimpleNotifier(ArticlesRepository());
 
   @override
@@ -23,7 +24,9 @@ class _SimpleExampleState extends State<SimpleExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Simple Example')),
+      appBar: AppBar(
+        title: const Text('Manual Loading Example'),
+      ),
       body: RefreshIndicator(
         onRefresh: () => notifier.refresh(),
         child: ListenableBuilder(
@@ -41,12 +44,24 @@ class _SimpleExampleState extends State<SimpleExample> {
                 ),
               ),
 
-              loadMoreType: PaginationAutoLoadMore(
-                loadMore: () => notifier.loadMore(),
-                loadingMoreBuilder: (context) => const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+              loadMoreType: PaginationManualLoadMore(
+                loadButtonBuilder: (context, isLoading) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        notifier.loadMore();
+                      },
+                      child: isLoading
+                          ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(),
+                            )
+                          : Text('Load More'),
+                    ),
+                  );
+                },
               ),
               initialLoadingBuilder: (context) =>
                   const Center(child: CircularProgressIndicator()),

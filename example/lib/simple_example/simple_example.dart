@@ -1,20 +1,17 @@
 import 'package:example/models/article.dart';
 import 'package:example/repository/articles_repository.dart';
-import 'package:example/simple_example.dart';
-import 'package:example/simple_notifier.dart';
+import 'package:example/simple_example/simple_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auto_pagination/flutter_auto_pagination.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
-class InfiniteLoadMoreExample extends StatefulWidget {
-  const InfiniteLoadMoreExample({super.key});
+class SimpleExample extends StatefulWidget {
+  const SimpleExample({super.key});
 
   @override
-  State<InfiniteLoadMoreExample> createState() =>
-      _InfiniteLoadMoreExampleState();
+  State<SimpleExample> createState() => _SimpleExampleState();
 }
 
-class _InfiniteLoadMoreExampleState extends State<InfiniteLoadMoreExample> {
+class _SimpleExampleState extends State<SimpleExample> {
   SimpleNotifier notifier = SimpleNotifier(ArticlesRepository());
 
   @override
@@ -26,9 +23,7 @@ class _InfiniteLoadMoreExampleState extends State<InfiniteLoadMoreExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manual Loading Example'),
-      ),
+      appBar: AppBar(title: const Text('Simple Example')),
       body: RefreshIndicator(
         onRefresh: () => notifier.refresh(),
         child: ListenableBuilder(
@@ -46,19 +41,11 @@ class _InfiniteLoadMoreExampleState extends State<InfiniteLoadMoreExample> {
                 ),
               ),
 
-              loadMoreType: PaginationInfiniteLoadMore(
+              loadMoreType: PaginationAutoLoadMore(
                 loadMore: () => notifier.loadMore(),
-                loadingItemBuilder: (context) => Skeletonizer(
-                  enabled: true,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Card(
-                      child: ListTile(
-                        title: Text('Some large text'),
-                        subtitle: Text('Some text'),
-                      ),
-                    ),
-                  ),
+                loadingMoreBuilder: (context) => const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
                 ),
               ),
               initialLoadingBuilder: (context) =>
