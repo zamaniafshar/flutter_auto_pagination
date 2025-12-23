@@ -1,7 +1,3 @@
-Here’s a complete [README.md](cci:7://file:///Users/mac/StudioProjects/flutter_auto_pagination/README.md:0:0-0:0) you can copy‑paste into your file.  
-You can later replace the image/GIF paths in `docs/images/...` and `docs/gifs/...`.
-
-```markdown
 # flutter_auto_pagination
 
 <!-- TODO: Update badge links -->
@@ -14,80 +10,40 @@ You can later replace the image/GIF paths in `docs/images/...` and `docs/gifs/..
 A lightweight, declarative pagination helper for Flutter that keeps your
 pagination logic clean and your UI simple.
 
+
+<p align="center">
+  <img src="gif1.gif" width="30%" />
+  <img src="gif2.gif" width="30%" />
+  <img src="gif3.gif" width="30%" />
+</p>
+
+
 `flutter_auto_pagination` gives you:
 
-- **[AutoPagination](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:48:0-89:1) widget** for list/grid pagination (sliver or normal views).
-- **[AutoPaginationMixin](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination_mixin.dart:5:0-74:1)** to encapsulate page loading logic and state.
+- **AutoPagination widget** for list/grid pagination (sliver or normal views).
+- **AutoPaginationMixin** to seperate logic and state from ui.
 - Support for **auto load-more on scroll** or **manual “Load more” button**.
 - Clear loading, empty, error and load-more states.
+- Very Customaizable
+- Works with any State Managements solution (Bloc, Riverpod, Provider, Redux, etc.)
+- - **Configurable builders** for diffrent states.
 
 Ideal for feeds, catalogs, search results, and any infinite scrolling list.
 
 <!-- TODO: Replace with real demo GIF -->
 ![Demo](docs/gifs/demo.gif)
 
----
-
-## Table of contents
-
-- **[Features](#features)**
-- **[Getting started](#getting-started)**
-- **[Basic usage](#basic-usage)**
-  - [Define pagination state](#define-pagination-state)
-  - [Use [AutoPaginationMixin](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination_mixin.dart:5:0-74:1) in your controller](#use-autopaginationmixin-in-your-controller)
-  - [Wire [AutoPagination](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:48:0-89:1) widget in UI](#wire-autopagination-widget-in-ui)
-- **[Load more strategies](#load-more-strategies)**
-- **[Customization](#customization)**
-- **[Examples](#examples)**
-- **[FAQ](#faq)**
-- **[License](#license)**
-
----
-
-## Features
-
-- **List or grid pagination** using [PaginationListView](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:16:0-18:1) or [PaginationGridView](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:20:0-24:1).
-- **Auto load-more** when the user approaches the bottom of the list.
-- **Manual load-more** via a custom button.
-- **Sliver support** for use inside `CustomScrollView` / `NestedScrollView`.
-- **Configurable builders** for:
-  - Initial loading
-  - Error state
-  - Empty list state
-  - Load-more indicator or button
-- **Strongly-typed data model** via [PaginationData<T>](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/pagination_data.dart:0:0-8:1) and `PaginationState<T>`.
-
----
-
-## Getting started
-
-Add the dependency in your [pubspec.yaml](cci:7://file:///Users/mac/StudioProjects/flutter_auto_pagination/pubspec.yaml:0:0-0:0):
-
-```yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  flutter_auto_pagination: ^0.0.1 # or latest
-```
-
-Import the package:
-
-```dart
-import 'package:flutter_auto_pagination/flutter_auto_pagination.dart';
-```
-
----
-
 ## Basic usage
 
-This package has two main building blocks:
+This package has three main building blocks:
 
-- **[AutoPagination](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:48:0-89:1) widget** – renders a list/grid with pagination UI.
-- **[AutoPaginationMixin<T>](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination_mixin.dart:5:0-74:1)** – encapsulates how data pages are fetched.
+- **AutoPagination widget** – renders a list/grid with pagination UI.
+- **AutoPaginationMixin<T>** – encapsulates how data pages are fetched.
+- **AutoPaginationState<T>** 
 
 ### Define pagination state
 
-You will typically have a `PaginationState<T>` stored in your state management
+Define a `PaginationState<T>` stored in your state management
 solution (e.g. `StatefulWidget`, `ChangeNotifier`, `Bloc`, `Riverpod`, etc.).
 
 ```dart
@@ -96,35 +52,35 @@ PaginationState<MyItem> _paginationState = PaginationState.initial();
 
 > Note: `PaginationState` is part of the package (see `src/pagination_state.dart`).
 
-### Use [AutoPaginationMixin](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination_mixin.dart:5:0-74:1) in your controller
+### Use AutoPaginationMixin in your notifier / statemanagement
 
-Create a controller / view model that mixes in [AutoPaginationMixin<T>](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination_mixin.dart:5:0-74:1) and
+Create a notifer / view model that mixes in AutoPaginationMixin<T> and
 connects it to your state.
 
 ```dart
-class MyItemsController with AutoPaginationMixin<MyItem> {
-  MyItemsController(this._setState, this._state);
 
-  PaginationState<MyItem> _state;
-  final void Function(PaginationState<MyItem>) _setState;
+class SimpleNotifier extends ChangeNotifier with AutoPaginationMixin<Article> {
+  SimpleNotifier(this._repository);
+
+  final ArticlesRepository _repository;
+
+  PaginationState<Article> _state = PaginationState.initial();
 
   @override
-  PaginationState<MyItem> get paginationState => _state;
-
-  @override
-  void setPaginationState(PaginationState<MyItem> newState) {
-    _state = newState;
-    _setState(newState);
+  Future<PaginationData<Article>> fetchPageData(int page) {
+    // Your api call
+    return _repository.fetch(page);
   }
 
+  // A getter for getting state from your statemanagement
   @override
-  Future<PaginationData<MyItem>> fetchPageData(int page) async {
-    // TODO: replace with your API / repository call
-    final response = await repository.fetchItems(page: page);
-    return PaginationData<MyItem>(
-      data: response.items,
-      hasReachedEnd: response.isLastPage,
-    );
+  PaginationState<Article> get paginationState => _state;
+
+  // Notify you when state should change
+  @override
+  void onPaginationStateChanged(PaginationState<Article> newState) {
+    _state = newState;
+    notifyListeners();
   }
 }
 ```
@@ -132,62 +88,84 @@ class MyItemsController with AutoPaginationMixin<MyItem> {
 Then, from your UI, call:
 
 ```dart
-await controller.load();    // initial load
-await controller.refresh(); // pull-to-refresh style reload
-await controller.loadMore();
+await notifer.load();    // initial load
+await notifer.refresh(); // pull-to-refresh style reload
+await notifer.loadMore();
 ```
 
-### Wire [AutoPagination](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:48:0-89:1) widget in UI
+> Note: AutoPaginationMixin does not hold state, it’s just a few helper methods and when state should change it just notifies you.
+It’s your statemanagements that hold state and updates ui. That’s why this package is customizable.
 
-Use the [AutoPagination](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:48:0-89:1) widget to render your list or grid.
+
+### Wire AutoPagination widget in UI
+
+Use the AutoPagination widget to render your list or grid.
 
 ```dart
-class MyItemsPage extends StatefulWidget {
-  const MyItemsPage({super.key});
+
+class SimpleExample extends StatefulWidget {
+  const SimpleExample({super.key});
 
   @override
-  State<MyItemsPage> createState() => _MyItemsPageState();
+  State<SimpleExample> createState() => _SimpleExampleState();
 }
 
-class _MyItemsPageState extends State<MyItemsPage> {
-  late PaginationState<MyItem> _state;
-  late MyItemsController _controller;
+class _SimpleExampleState extends State<SimpleExample> {
+  SimpleNotifier notifier = SimpleNotifier(ArticlesRepository());
 
   @override
   void initState() {
+    notifier.load();
     super.initState();
-    _state = PaginationState<MyItem>.initial();
-    _controller = MyItemsController((s) => setState(() => _state = s), _state);
-    _controller.load();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My items')),
-      body: AutoPagination<MyItem>(
-        state: _state,
-        builder: (context, index, item) {
-          return ListTile(title: Text(item.title));
-        },
-        viewType: const PaginationListView(),
-        loadMoreType: PaginationAutoLoadMore(
-          paginationScrollThreshold: 250,
-          loadMore: _controller.loadMore,
-          loadingMoreBuilder: (context) => const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-          loadItemsCount: 1,
-        ),
-        initialLoadingBuilder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-        emptyListBuilder: (context) => const Center(
-          child: Text('No items found'),
-        ),
-        errorBuilder: (context, error) => Center(
-          child: Text('Something went wrong: $error'),
+      appBar: AppBar(title: const Text('Simple Example')),
+      body: RefreshIndicator(
+        onRefresh: () => notifier.refresh(),
+        child: ListenableBuilder(
+          listenable: notifier,
+          builder: (context, _) {
+            return AutoPagination<Article>(
+              state: notifier.paginationState,
+              builder: (context, index, item) => Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Card(
+                  child: ListTile(
+                    title: Text(item.title),
+                    subtitle: Text('ID: ${item.id}'),
+                  ),
+                ),
+              ),
+
+              loadMoreType: PaginationAutoLoadMore(
+                loadMore: () => notifier.loadMore(),
+                loadingMoreBuilder: (context) => const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
+              initialLoadingBuilder: (context) =>
+                  const Center(child: CircularProgressIndicator()),
+              emptyListBuilder: (context) =>
+                  const Center(child: Text('No items')),
+              errorBuilder: (context, e) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Error: $e'),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () => notifier.load(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -195,18 +173,16 @@ class _MyItemsPageState extends State<MyItemsPage> {
 }
 ```
 
-<!-- TODO: Replace with real screenshot -->
-![List Example](docs/images/list_example.png)
 
 ---
 
 ## Load more strategies
 
-[AutoPagination](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:48:0-89:1) supports two load-more strategies via [PaginationLoadMoreType](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:26:0-26:38):
+AutoPagination supports two load-more strategies via PaginationLoadMoreType:
 
-### 1. Auto load-more ([PaginationAutoLoadMore](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:34:0-46:1))
+### 1. Auto load-more
 
-Triggers [loadMore](cci:1://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination_mixin.dart:43:2-73:3) automatically when the user scrolls close to the bottom.
+Triggers loadMore automatically when the user scrolls close to the bottom.
 
 ```dart
 loadMoreType: PaginationAutoLoadMore(
@@ -219,9 +195,9 @@ loadMoreType: PaginationAutoLoadMore(
 ),
 ```
 
-### 2. Manual load-more ([PaginationManualLoadMore](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:28:0-32:1))
+### 2. Manual load-more PaginationManualLoadMore
 
-Shows a button at the bottom which calls your [loadMore](cci:1://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination_mixin.dart:43:2-73:3) method.
+Shows a button at the bottom which calls your loadMore method.
 
 ```dart
 loadMoreType: PaginationManualLoadMore(
@@ -290,20 +266,11 @@ loadMoreType: PaginationManualLoadMore(
   ),
   ```
 
-<!-- TODO: Replace with customization screenshot -->
-![Grid Example](docs/images/grid_example.png)
-
 ---
 
 ## Examples
 
-Check the `example/` folder for a complete, runnable app that demonstrates:
-
-- **Basic list pagination**
-- **Grid pagination**
-- **Auto vs manual load-more**
-- Handling **empty**, **error**, and **load-more error** states
-
+Check the `example/` folder.
 You can run it with:
 
 ```bash
@@ -311,8 +278,6 @@ cd example
 flutter run
 ```
 
-<!-- TODO: Replace with real example GIF -->
-![Example App](docs/gifs/example_app.gif)
 
 ---
 
@@ -327,14 +292,15 @@ flutter run
 ### Does it support my state management solution?
 
 Yes. The package is agnostic. As long as you can hold a `PaginationState<T>`
-and call [setPaginationState](cci:1://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination_mixin.dart:10:2-10:54), you can integrate it with your preferred
+and call you can integrate it with your preferred
 architecture (Bloc, Riverpod, Provider, Redux, etc.).
+See examples/statemanagements folder.
 
 ### Does it work with Slivers / CustomScrollView?
 
-Yes. Set `sliver: true` and place [AutoPagination](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:48:0-89:1) inside your scroll view.
+Yes. Set `sliver: true` and place AutoPagination inside your scroll view.
 Remember that when `sliver` is `true` and `loadMoreType` is
-[PaginationAutoLoadMore](cci:2://file:///Users/mac/StudioProjects/flutter_auto_pagination/lib/src/auto_pagination.dart:34:0-46:1), you **must** provide a `scrollController`.
+PaginationAutoLoadMore, you **must** provide a `scrollController`.
 
 ---
 
@@ -342,10 +308,3 @@ Remember that when `sliver` is `true` and `loadMoreType` is
 
 This project is licensed under the MIT License – see the [LICENSE](LICENSE)
 file for details.
-```
-
-### Summary
-
-- You can paste this into [README.md](cci:7://file:///Users/mac/StudioProjects/flutter_auto_pagination/README.md:0:0-0:0) in your repo.
-- Later, replace `docs/images/*.png` and `docs/gifs/*.gif` with actual assets and paths.
-- If you want, I can also help you trim this down or add sections like “Contributing” or “Roadmap”.
