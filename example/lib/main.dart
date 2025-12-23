@@ -12,6 +12,65 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: ComplexExample());
+    return const MaterialApp(
+      home: Home(),
+    );
+  }
+}
+
+class Home extends StatelessWidget {
+  const Home({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Auto Pagination Examples'),
+      ),
+
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const SimpleExample(),
+                  ),
+                );
+              },
+              child: const Text('Simple Example (Auto Load More)'),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ManualLoadMoreExample(),
+                  ),
+                );
+              },
+              child: const Text('Manual Load More Example'),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ComplexExample(),
+                  ),
+                );
+              },
+              child: const Text('Manual Load More Example'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
