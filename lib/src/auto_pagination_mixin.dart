@@ -8,26 +8,33 @@ abstract mixin class AutoPaginationMixin<T> {
   Future<PaginationData<T>> fetchPageData(int page);
 
   @protected
-  void setPaginationState(PaginationState<T> newState);
+  void onPaginationStateChanged(PaginationState<T> newState);
+
+
 
   @protected
   PaginationState<T> get paginationState;
 
+  void _setPaginationState(PaginationState<T> newState){
+    onPaginationStateChanged(newState);
+  }
+
+
   Future<void> load() async {
-    setPaginationState(PaginationState.initial());
+    _setPaginationState(PaginationState.initial());
     await _fetchInitialData();
   }
 
   /// will not reset data until new one is fetched
   Future<void> refresh() async {
-    setPaginationState(paginationState.copyWith(currentPage: 1));
+    _setPaginationState(paginationState.copyWith(currentPage: 1));
     await _fetchInitialData();
   }
 
   Future<void> _fetchInitialData() async {
     try {
       final result = await fetchPageData(paginationState.currentPage);
-      setPaginationState(
+      _setPaginationState(
         paginationState.copyWith(
           status: const PaginationLoadSuccess(),
           data: result.data,
@@ -35,7 +42,7 @@ abstract mixin class AutoPaginationMixin<T> {
         ),
       );
     } catch (e) {
-      setPaginationState(
+      _setPaginationState(
         paginationState.copyWith(status: PaginationLoadFailure(e)),
       );
     }
@@ -50,7 +57,7 @@ abstract mixin class AutoPaginationMixin<T> {
 
     final currentState = paginationState;
 
-    setPaginationState(
+    _setPaginationState(
       paginationState.copyWith(
         status: const PaginationLoadingMore(),
         currentPage: paginationState.currentPage + 1,
@@ -59,7 +66,7 @@ abstract mixin class AutoPaginationMixin<T> {
 
     try {
       final result = await fetchPageData(paginationState.currentPage);
-      setPaginationState(
+      _setPaginationState(
         paginationState.copyWith(
           status: const PaginationLoadSuccess(),
           data: [...currentState.data, ...result.data],
@@ -67,7 +74,7 @@ abstract mixin class AutoPaginationMixin<T> {
         ),
       );
     } catch (e) {
-      setPaginationState(
+      _setPaginationState(
         paginationState.copyWith(status: PaginationLoadMoreFailure(e)),
       );
     }
