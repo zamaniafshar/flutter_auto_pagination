@@ -273,8 +273,13 @@ loadMoreType: PaginationManualLoadMore(
 
 ## Examples
 
-Check the `example/` folder.
-You can run it with:
+This package ships with several runnable examples:
+
+- **Simple list** – basic infinite list using `ChangeNotifier` + `AutoPaginationMixin`.
+- **Manual \"Load more\" button** – demonstrates `PaginationManualLoadMore`.
+- **Complex search + local state** – uses `ValueNotifier`, debounced search, and per-item like/unlike.
+
+Check the `example/` folder. To run them all:
 
 ```bash
 cd example
@@ -304,6 +309,43 @@ See examples/statemanagements folder.
 Yes. Set `sliver: true` and place AutoPagination inside your scroll view.
 Remember that when `sliver` is `true` and `loadMoreType` is
 PaginationAutoLoadMore, you **must** provide a `scrollController`.
+
+### Should AutoPaginationMixin manage its own state?
+
+No. By design, `AutoPaginationMixin` is stateless.
+
+It only:
+
+- exposes the `load`, `refresh`, and `loadMore` methods
+- calls `onPaginationStateChanged` with a new `PaginationState<T>`
+
+You are responsible for holding `PaginationState<T>` inside your own
+state-management solution (`ChangeNotifier`, `Bloc`, `Riverpod`, etc.). This
+keeps the package:
+
+- flexible – you can combine pagination with other pieces of state (filters,
+  tabs, form values, etc.)
+- testable – you fully control how state is stored and compared
+- easy to integrate – no opinionated base classes are forced on your app
+
+If you prefer an alternative where the mixin owns its state internally, please
+open an issue – we can explore an opt-in helper or a separate mixin.
+
+---
+
+## Contributing
+
+Contributions, bug reports, and feature requests are very welcome.❤️
+
+You help with:
+
+- Writing tests.
+- Add documentation.
+- Add more examples.
+- Test it on complex scenarios and edge cases.
+
+
+Please open a GitHub issue to discuss about design or feature requests.
 
 ---
 
