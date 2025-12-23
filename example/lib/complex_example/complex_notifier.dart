@@ -22,7 +22,7 @@ class ComplexNotifier extends ValueNotifier<ComplexState>
   PaginationState<Article> get paginationState => value.paginationState;
 
   @override
-  void _setPaginationState(PaginationState<Article> newState) {
+  void onPaginationStateChanged(PaginationState<Article> newState) {
     value = value.copyWith(paginationState: newState);
   }
 
